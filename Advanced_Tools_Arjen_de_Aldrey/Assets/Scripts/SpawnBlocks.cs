@@ -119,7 +119,7 @@ public class SpawnBlocks : MonoBehaviour
         CreationShader.SetTexture(0, "Result", currentStates);
         CreationShader.SetInt("gridWidth", blockAmountWidth);
         CreationShader.SetInt("gridHeight", blockAmountHeight);
-        CreationShader.Dispatch(0, blockAmountWidth* blockAmountHeight / 256, 1, 1);
+        CreationShader.Dispatch(0, blockAmountWidth* blockAmountHeight / 32, 1, 1);
     }
     
     private void CopyGrid(RenderTexture from, RenderTexture to)
@@ -128,7 +128,7 @@ public class SpawnBlocks : MonoBehaviour
         CopyShader.SetTexture(0, "Result", to);
         CopyShader.SetInt("gridWidth", blockAmountWidth);
         CopyShader.SetInt("gridHeight", blockAmountHeight);
-        CopyShader.Dispatch(0, blockAmountWidth * blockAmountHeight / 256, 1, 1);
+        CopyShader.Dispatch(0, blockAmountWidth * blockAmountHeight / 32, 1, 1);
     }
 
     private void UpdateGrid()
@@ -137,7 +137,7 @@ public class SpawnBlocks : MonoBehaviour
         GPUShader.SetTexture(0, "Result", renderTarget);
         GPUShader.SetInt("gridWidth", blockAmountWidth);
         GPUShader.SetInt("gridHeight", blockAmountHeight);
-        GPUShader.Dispatch(0, blockAmountWidth * blockAmountHeight / 256, 1, 1);
+        GPUShader.Dispatch(0, blockAmountWidth * blockAmountHeight / 32, 1, 1);
     }
     
     private void DisplaySpawnTiming()
