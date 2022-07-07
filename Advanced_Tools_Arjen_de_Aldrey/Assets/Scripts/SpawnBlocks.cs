@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,8 +8,8 @@ public class SpawnBlocks : MonoBehaviour
     [SerializeField] private GameObject blockPrefab;
     private Block[,] blocks;
     private List<Block> blocksList;
-    [Range(1,10000)][SerializeField] private int blockAmountWidth;
-    [Range(1,10000)][SerializeField] private int blockAmountHeight;
+    [Range(1, 10000)][SerializeField] private int blockAmountWidth = 180;
+    [Range(1, 10000)] [SerializeField] private int blockAmountHeight = 100;
 
     private float blockWidth;
     private float blockHeight;
@@ -19,15 +20,15 @@ public class SpawnBlocks : MonoBehaviour
     private float timePassed;
     [SerializeField] private float TimeInbetweenGenerations;
 
-    [SerializeField] private StandardPreset preset;
+    [SerializeField] private NeighbourCheckingPreset preset;
+    [SerializeField] private MapGenerationPreset spawningPreset;
+
+    private DateTime timeBeforeTest;
 
 
     void Start()
     {
-        blockWidth = Screen.width / (float)blockAmountWidth;
-        blockHeight = Screen.height / (float)blockAmountHeight;
         blocksList = new List<Block>();
-        generateMap();
     }
 
     void Update()
@@ -52,45 +53,21 @@ public class SpawnBlocks : MonoBehaviour
         }
     }
 
-    private void generateMap()
+    private void OnGUI()
     {
-        blocks = new Block[blockAmountWidth, blockAmountHeight + 1];
-        for(int i = 0;i < blockAmountHeight; i++)
+        if (GUI.Button(new Rect(10, 10, 200, 100), "Generate squares"))
         {
-            for (int j = 0; j < blockAmountWidth; j++)
-            {
-                Vector2 pos = new Vector2(j*blockWidth+blockWidth*0.5f, i * blockHeight + blockHeight * 0.5f);
-                blocks[j, i] = GameObject.Instantiate(blockPrefab, new Vector3(pos.x,pos.y,0),Quaternion.identity).GetComponent<Block>();
-                blocks[j, i].GetComponent<RectTransform>().sizeDelta = new Vector2(blockWidth,blockHeight);
-                blocks[j, i].transform.parent = parentObject.transform;
-                //int randomnumba = Random.Range(0, 4);
-                //if (randomnumba == 1) blocks[j, i].alive = true;
-                blocksList.Add(blocks[j, i]);
-            }
+            timeBeforeTest = DateTime.Now;
+            blockWidth = Screen.width / (float)blockAmountWidth;
+            blockHeight = Screen.height / (float)blockAmountHeight;
+            spawningPreset.spawnRuleset.GenerateMap(blockWidth, blockHeight, blockAmountWidth, blockAmountHeight, blockPrefab, ref blocks, ref blocksList, parentObject.transform);
+            DisplaySpawnTiming();
         }
-        for (int i = 0; i < blockAmountHeight; i++)
-        {
-            for (int j = 0; j < blockAmountWidth; j++)
-            {
-                //north
-                if (i + 1 < blockAmountHeight) blocks[j, i].North = blocks[j, i + 1];
-                //south
-                if(i - 1 >= 0) blocks[j, i].South = blocks[j, i - 1];
-                //east
-                if (j+1 < blockAmountWidth) blocks[j, i].East = blocks[j+1, i];
-                //west
-                if (j-1 >= 0) blocks[j, i].West = blocks[j - 1, i];
-                //north-west
-                if (i + 1 < blockAmountHeight && j - 1 >= 0) blocks[j, i].NorthW = blocks[j - 1, i + 1];
-                //north-east
-                if (i + 1 < blockAmountHeight && j + 1 < blockAmountWidth) blocks[j, i].NorthE = blocks[j + 1, i + 1];
-                //south-west
-                if (i - 1 >= 0 && j - 1 >= 0) blocks[j, i].SouthW = blocks[j - 1, i - 1];
-                //south-east
-                if (i - 1 >= 0 && j + 1 < blockAmountWidth) blocks[j, i].SouthE = blocks[j + 1, i - 1];
-            }
-        }
-
+    }
+    
+    private void DisplaySpawnTiming()
+    {
+        Debug.Log($"It took {(DateTime.Now - timeBeforeTest).TotalSeconds} seconds to generate the map.");
     }
 
     private void reset()
@@ -101,6 +78,6 @@ public class SpawnBlocks : MonoBehaviour
         }
         start = false;
         blocksList.Clear();
-        generateMap();
+        spawningPreset.spawnRuleset.GenerateMap(blockWidth, blockHeight, blockAmountWidth, blockAmountHeight, blockPrefab, ref blocks, ref blocksList, parentObject.transform);
     }
 }
