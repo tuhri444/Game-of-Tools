@@ -532,8 +532,8 @@ MonoBehaviour:
   renderTarget: {fileID: 0}
   currentStates: {fileID: 0}
   blockPrefab: {fileID: 7692978120745431519, guid: 011d5774809f089458f4f9ea834be654, type: 3}
-  blockAmountWidth: 100
-  blockAmountHeight: 100
+  blockAmountWidth: 1400
+  blockAmountHeight: 1400
   parentObject: {fileID: 267628960}
   TimeInbetweenGenerations: 0.1
   preset: {fileID: 11400000, guid: 0e9daac213a92f342a61720cb6215353, type: 2}

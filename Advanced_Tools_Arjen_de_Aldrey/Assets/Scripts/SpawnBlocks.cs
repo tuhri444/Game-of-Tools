@@ -19,8 +19,8 @@ public class SpawnBlocks : MonoBehaviour
     [SerializeField] private GameObject blockPrefab;
     private Block[,] blocks;
     private List<Block> blocksList;
-    [Range(1, 1000)][SerializeField] private int blockAmountWidth = 180;
-    [Range(1, 1000)] [SerializeField] private int blockAmountHeight = 100;
+    [Range(1, 1400)][SerializeField] private int blockAmountWidth = 180;
+    [Range(1, 1400)] [SerializeField] private int blockAmountHeight = 100;
 
     private float blockWidth;
     private float blockHeight;
@@ -35,7 +35,7 @@ public class SpawnBlocks : MonoBehaviour
     [SerializeField] private MapGenerationPreset spawningPreset;
 
     private DateTime timeBeforeTest;
-    private float timePassedUnScaled;
+    private float fpsChecked = 0;
     private float averageFPS;
 
 
@@ -93,6 +93,10 @@ public class SpawnBlocks : MonoBehaviour
 
             DisplayAverageFPSOverTime(10f);
         }
+        else
+        {
+            timeBeforeTest = DateTime.Now;
+        }
     }
 
     private void OnGUI()
@@ -101,12 +105,12 @@ public class SpawnBlocks : MonoBehaviour
         {
             CreateGrid();
             //reset();
-            timeBeforeTest = DateTime.Now;
+            //timeBeforeTest = DateTime.Now;
             CopyGrid(currentStates, renderTarget);
             //blockWidth = Screen.width / (float)blockAmountWidth;
             //blockHeight = Screen.height / (float)blockAmountHeight;
             //spawningPreset.spawnRuleset.GenerateMap(blockWidth, blockHeight, blockAmountWidth, blockAmountHeight, blockPrefab, ref blocks, ref blocksList, parentObject.transform);
-            DisplaySpawnTiming();
+            //DisplaySpawnTiming();
         }
     }
 
@@ -115,7 +119,7 @@ public class SpawnBlocks : MonoBehaviour
         CreationShader.SetTexture(0, "Result", currentStates);
         CreationShader.SetInt("gridWidth", blockAmountWidth);
         CreationShader.SetInt("gridHeight", blockAmountHeight);
-        CreationShader.Dispatch(0, blockAmountWidth* blockAmountHeight / 32, 1, 1);
+        CreationShader.Dispatch(0, blockAmountWidth* blockAmountHeight / 256, 1, 1);
     }
     
     private void CopyGrid(RenderTexture from, RenderTexture to)
@@ -124,7 +128,7 @@ public class SpawnBlocks : MonoBehaviour
         CopyShader.SetTexture(0, "Result", to);
         CopyShader.SetInt("gridWidth", blockAmountWidth);
         CopyShader.SetInt("gridHeight", blockAmountHeight);
-        CopyShader.Dispatch(0, blockAmountWidth * blockAmountHeight / 32, 1, 1);
+        CopyShader.Dispatch(0, blockAmountWidth * blockAmountHeight / 256, 1, 1);
     }
 
     private void UpdateGrid()
@@ -133,7 +137,7 @@ public class SpawnBlocks : MonoBehaviour
         GPUShader.SetTexture(0, "Result", renderTarget);
         GPUShader.SetInt("gridWidth", blockAmountWidth);
         GPUShader.SetInt("gridHeight", blockAmountHeight);
-        GPUShader.Dispatch(0, blockAmountWidth * blockAmountHeight / 32, 1, 1);
+        GPUShader.Dispatch(0, blockAmountWidth * blockAmountHeight / 256, 1, 1);
     }
     
     private void DisplaySpawnTiming()
@@ -143,18 +147,19 @@ public class SpawnBlocks : MonoBehaviour
 
     private void DisplayAverageFPSOverTime(float overTimeInSeconds)
     {
-        if (timePassedUnScaled > overTimeInSeconds)
+        if ((DateTime.Now - timeBeforeTest).Seconds > overTimeInSeconds)
         {
             Debug.Log($"The average FPS over 10 seconds is: {averageFPS * 0.1f} FPS");
 
             averageFPS = 0;
-            timePassedUnScaled = 0;
+            fpsChecked = 0;
+            timeBeforeTest = DateTime.Now;
             return;
-        } else if (timePassedUnScaled > overTimeInSeconds*0.1)
+        } else if ((DateTime.Now - timeBeforeTest).Seconds > overTimeInSeconds*0.1f * fpsChecked)
         {
             averageFPS += 1.0f / Time.deltaTime;
+            fpsChecked++;
         }
-        timePassedUnScaled += Time.unscaledDeltaTime;
     }
 
     private void reset()
