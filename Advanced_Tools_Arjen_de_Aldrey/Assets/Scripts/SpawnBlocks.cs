@@ -54,6 +54,11 @@ public class SpawnBlocks : MonoBehaviour
             {
                 timePassed += Time.deltaTime;
             }
+            DisplayAverageFPSOverTime(10f);
+        }
+        else
+        {
+            timeBeforeTest = DateTime.Now;
         }
     }
 
@@ -96,6 +101,24 @@ public class SpawnBlocks : MonoBehaviour
             }
         }
 
+    }
+
+    private void DisplayAverageFPSOverTime(float overTimeInSeconds)
+    {
+        if ((DateTime.Now - timeBeforeTest).Seconds > overTimeInSeconds)
+        {
+            Debug.Log($"The average FPS over 10 seconds is: {averageFPS * 0.1f} FPS");
+
+            averageFPS = 0;
+            fpsChecked = 0;
+            timeBeforeTest = DateTime.Now;
+            return;
+        }
+        else if ((DateTime.Now - timeBeforeTest).Seconds > overTimeInSeconds * 0.1f * fpsChecked)
+        {
+            averageFPS += 1.0f / Time.deltaTime;
+            fpsChecked++;
+        }
     }
 
     private void reset()
