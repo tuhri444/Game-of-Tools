@@ -5,11 +5,19 @@ using UnityEngine;
 
 public class SpawnBlocks : MonoBehaviour
 {
+    //GPU specific
+    public static SpawnBlocks instance;
+    [SerializeField] public ComputeShader GPUShader;
+    [SerializeField] private GameObject renderQuad;
+
+    private Material renderMat;
+    public RenderTexture renderTarget;
+
     [SerializeField] private GameObject blockPrefab;
     private Block[,] blocks;
     private List<Block> blocksList;
-    [Range(1, 10000)][SerializeField] private int blockAmountWidth = 180;
-    [Range(1, 10000)] [SerializeField] private int blockAmountHeight = 100;
+    [Range(1, 1000)][SerializeField] private int blockAmountWidth = 180;
+    [Range(1, 1000)] [SerializeField] private int blockAmountHeight = 100;
 
     private float blockWidth;
     private float blockHeight;
@@ -24,11 +32,33 @@ public class SpawnBlocks : MonoBehaviour
     [SerializeField] private MapGenerationPreset spawningPreset;
 
     private DateTime timeBeforeTest;
+    private float timePassedUnScaled;
+    private float averageFPS;
 
 
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else if (instance != this)
+        {
+            Debug.Log($"Instance already exists, destroying object!");
+            Destroy(this);
+        }
+    }
     void Start()
     {
         blocksList = new List<Block>();
+
+        renderTarget = new RenderTexture(blockAmountWidth, blockAmountHeight, 24);
+        renderTarget.enableRandomWrite = true;
+        renderTarget.Create();
+
+        if (renderQuad == null) return;
+        renderMat = renderQuad.GetComponent<MeshRenderer>().material;
+        renderMat.SetTexture("_MainTex", renderTarget);
     }
 
     void Update()
@@ -43,12 +73,14 @@ public class SpawnBlocks : MonoBehaviour
             if (timePassed >= TimeInbetweenGenerations)
             {
                 timePassed = 0;
-                preset.checkBehaviour.CheckBlocks(blocksList, preset.ruleset);
+                preset.checkBehaviour.CheckBlocks(blocksList, preset.ruleset, blockAmountWidth, blockAmountHeight);
             }
             else
             {
                 timePassed += Time.deltaTime;
             }
+
+            DisplayAverageFPSOverTime(10f);
         }
     }
 
@@ -72,6 +104,22 @@ public class SpawnBlocks : MonoBehaviour
     private void DisplaySpawnTiming()
     {
         Debug.Log($"It took {(DateTime.Now - timeBeforeTest).TotalSeconds} seconds to generate the map.");
+    }
+
+    private void DisplayAverageFPSOverTime(float overTimeInSeconds)
+    {
+        if (timePassedUnScaled > overTimeInSeconds)
+        {
+            Debug.Log($"The average FPS over 10 seconds is: {averageFPS * 0.1f} FPS");
+
+            averageFPS = 0;
+            timePassedUnScaled = 0;
+            return;
+        } else if (timePassedUnScaled > overTimeInSeconds*0.1)
+        {
+            averageFPS += 1.0f / Time.deltaTime;
+        }
+        timePassedUnScaled += Time.unscaledDeltaTime;
     }
 
     private void reset()

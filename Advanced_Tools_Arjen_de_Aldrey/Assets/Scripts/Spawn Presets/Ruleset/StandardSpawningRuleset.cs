@@ -16,6 +16,8 @@ public class StandardSpawningRuleset : ISpawnRuleset
                 blocks[j, i].GetComponent<RectTransform>().sizeDelta = new Vector2(blockWidth, blockHeight);
                 blocks[j, i].transform.parent = parentObject;
                 blocksList.Add(blocks[j, i]);
+                float blockNum = j + i;
+                blocks[j, i].alive = blockNum % 2 == 0? true : false;
             }
         }
         for (int i = 0; i < blockAmountHeight; i++)

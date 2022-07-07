@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface ICheckBehaviour
 {
-    void CheckBlocks(List<Block> blocksList, IRuleset ruleset);
+    void CheckBlocks(List<Block> blocksList, IRuleset ruleset, int blockAmountWidth, int blockAmountHeight);
 }

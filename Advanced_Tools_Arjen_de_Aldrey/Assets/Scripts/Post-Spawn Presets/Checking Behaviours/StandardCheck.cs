@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class StandardCheck : ICheckBehaviour
 {
-    public void CheckBlocks(List<Block> blocksList, IRuleset ruleset)
+    public void CheckBlocks(List<Block> blocksList, IRuleset ruleset, int blockAmountWidth, int blockAmountHeight)
     {
         foreach (Block blockToCheck in blocksList)
         {

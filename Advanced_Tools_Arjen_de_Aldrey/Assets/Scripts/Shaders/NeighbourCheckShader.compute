@@ -1,0 +1,102 @@
+#pragma kernel CSMain
+
+RWStructuredBuffer<int> oldStates;
+RWStructuredBuffer<int> newStates;
+//RWTexture2D<float4> renderTexture; 
+int stateListSize;
+int stateListWidth;
+int stateListHeight;
+
+int2 Get2DIndex(int id, int Width)
+{
+    float y = id / Width;
+    float x = id % Width;
+    return int2(x,y);
+}
+
+int Get1DIndex(int2 id, int Width)
+{
+    return int(id.x+(id.y*Width));
+}
+
+int GetAmountOfAliveNeighbors(int2 coordSelf)
+{
+    int aliveNeighbors = 0;
+    int2 coordNeighbour;
+    //TopLeft
+    coordNeighbour = int2(coordSelf.x - 1, coordSelf.y + 1);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < stateListWidth && coordNeighbour.y > 0 && coordNeighbour.y < stateListHeight)
+    {
+        aliveNeighbors += oldStates[Get1DIndex(coordNeighbour, stateListWidth)];
+    }
+    //TopMiddle
+    coordNeighbour = int2(coordSelf.x, coordSelf.y + 1);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < stateListWidth && coordNeighbour.y > 0 && coordNeighbour.y < stateListHeight)
+    {
+        aliveNeighbors += oldStates[Get1DIndex(coordNeighbour, stateListWidth)];
+    }
+    //TopRight
+    coordNeighbour = int2(coordSelf.x + 1, coordSelf.y + 1);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < stateListWidth && coordNeighbour.y > 0 && coordNeighbour.y < stateListHeight)
+    {
+        aliveNeighbors += oldStates[Get1DIndex(coordNeighbour, stateListWidth)];
+    }
+    //MiddleLeft
+    coordNeighbour = int2(coordSelf.x - 1, coordSelf.y);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < stateListWidth && coordNeighbour.y > 0 && coordNeighbour.y < stateListHeight)
+    {
+        aliveNeighbors += oldStates[Get1DIndex(coordNeighbour, stateListWidth)];
+    }
+    //MiddleRight
+    coordNeighbour = int2(coordSelf.x + 1, coordSelf.y);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < stateListWidth && coordNeighbour.y > 0 && coordNeighbour.y < stateListHeight)
+    {
+        aliveNeighbors += oldStates[Get1DIndex(coordNeighbour, stateListWidth)];
+    }
+    //BottomLeft
+    coordNeighbour = int2(coordSelf.x - 1, coordSelf.y - 1);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < stateListWidth && coordNeighbour.y > 0 && coordNeighbour.y < stateListHeight)
+    {
+        aliveNeighbors += oldStates[Get1DIndex(coordNeighbour, stateListWidth)];
+    }
+    //BottomMiddle
+    coordNeighbour = int2(coordSelf.x, coordSelf.y - 1);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < stateListWidth && coordNeighbour.y > 0 && coordNeighbour.y < stateListHeight)
+    {
+        aliveNeighbors += oldStates[Get1DIndex(coordNeighbour, stateListWidth)];
+    }
+    //BottomRight
+    coordNeighbour = int2(coordSelf.x + 1, coordSelf.y - 1);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < stateListWidth && coordNeighbour.y > 0 && coordNeighbour.y < stateListHeight)
+    {
+        aliveNeighbors += oldStates[Get1DIndex(coordNeighbour, stateListWidth)];
+    }
+
+    return aliveNeighbors;
+}
+
+[numthreads(32,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= stateListSize)
+        return;
+
+    int currentState = oldStates[id.x];
+    
+    //Check how many are alive
+    int countAliveNeighbors = GetAmountOfAliveNeighbors(Get2DIndex(id.x, stateListWidth));
+
+    //simple if check to see if self is alive
+    if (currentState == 0 && countAliveNeighbors == 3)
+    {
+        newStates[id.x] = 1;
+    } else if (currentState == 1 && (countAliveNeighbors == 2 || countAliveNeighbors == 3))
+    {
+        newStates[id.x] = 1;
+    } else
+    {
+        newStates[id.x] = 0;
+    }
+
+    //renderTexture[Get2DIndex(id.x, stateListWidth)] = float4(newStates[id.x],newStates[id.x],newStates[id.x],1);
+}

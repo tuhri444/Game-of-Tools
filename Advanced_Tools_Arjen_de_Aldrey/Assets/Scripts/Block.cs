@@ -17,16 +17,11 @@ public class Block : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler
     public bool alive;
     public int aliveNeighbours = 0;
 
-    private Material spriteMaterial;
+    private RawImage image;
 
-    private void Awake()
-    {
-        RawImage image = GetComponent<RawImage>();
-        spriteMaterial = Instantiate(image.material);
-        image.material = spriteMaterial;
-    }
     private void Start()
     {
+        image = GetComponent<RawImage>();
         ToggleAlive(alive);
     }
 
@@ -47,9 +42,9 @@ public class Block : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler
     {
         alive = isAlive;
         if (alive)
-            spriteMaterial.color = Color.white;
+            image.color = Color.white;
         else
-            spriteMaterial.color = Color.black;
+            image.color = Color.black;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -57,12 +52,12 @@ public class Block : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler
         if (Input.GetMouseButton(0))
         {
             alive = true;
-            spriteMaterial.color = Color.white;
+            image.color = Color.white;
         }
     }
     public void OnPointerDown(PointerEventData eventData)
     {
         alive = true;
-        spriteMaterial.color = Color.white;
+        image.color = Color.white;
     }    
 }
