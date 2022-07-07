@@ -76,6 +76,7 @@ public class SpawnBlocks : MonoBehaviour
                 //int randomnumba = Random.Range(0, 4);
                 //if (randomnumba == 1) blocks[j, i].alive = true;
                 blocksList.Add(blocks[j, i]);
+                blocks[j, i].alive = (j + i) % 2 == 0 ? true : false;
             }
         }
         for (int i = 0; i < blockAmountHeight; i++)
