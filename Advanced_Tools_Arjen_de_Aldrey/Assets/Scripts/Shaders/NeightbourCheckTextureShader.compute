@@ -1,0 +1,97 @@
+#pragma kernel CSMain
+
+RWTexture2D<float4> Original;
+RWTexture2D<float4> Result;
+int gridWidth;
+int gridHeight;
+
+int2 Get2DIndex(int id, int Width)
+{
+    float y = id / Width;
+    float x = id % Width;
+    return int2(x,y);
+}
+
+int GetAmountOfAliveNeighbors(int2 coordSelf)
+{
+    int aliveNeighbors = 0;
+    int2 coordNeighbour;
+    //TopLeft
+    coordNeighbour = int2(coordSelf.x - 1, coordSelf.y + 1);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < gridWidth && coordNeighbour.y > 0 && coordNeighbour.y < gridHeight)
+    {
+        aliveNeighbors += Original[coordNeighbour];
+    }
+    //TopMiddle
+    coordNeighbour = int2(coordSelf.x, coordSelf.y + 1);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < gridWidth && coordNeighbour.y > 0 && coordNeighbour.y < gridHeight)
+    {
+        aliveNeighbors += Original[coordNeighbour];
+    }
+    //TopRight
+    coordNeighbour = int2(coordSelf.x + 1, coordSelf.y + 1);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < gridWidth && coordNeighbour.y > 0 && coordNeighbour.y < gridHeight)
+    {
+        aliveNeighbors += Original[coordNeighbour];
+    }
+    //MiddleLeft
+    coordNeighbour = int2(coordSelf.x - 1, coordSelf.y);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < gridWidth && coordNeighbour.y > 0 && coordNeighbour.y < gridHeight)
+    {
+        aliveNeighbors += Original[coordNeighbour];
+    }
+    //MiddleRight
+    coordNeighbour = int2(coordSelf.x + 1, coordSelf.y);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < gridWidth && coordNeighbour.y > 0 && coordNeighbour.y < gridHeight)
+    {
+        aliveNeighbors += Original[coordNeighbour];
+    }
+    //BottomLeft
+    coordNeighbour = int2(coordSelf.x - 1, coordSelf.y - 1);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < gridWidth && coordNeighbour.y > 0 && coordNeighbour.y < gridHeight)
+    {
+        aliveNeighbors += Original[coordNeighbour];
+    }
+    //BottomMiddle
+    coordNeighbour = int2(coordSelf.x, coordSelf.y - 1);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < gridWidth && coordNeighbour.y > 0 && coordNeighbour.y < gridHeight)
+    {
+        aliveNeighbors += Original[coordNeighbour];
+    }
+    //BottomRight
+    coordNeighbour = int2(coordSelf.x + 1, coordSelf.y - 1);
+    if (coordNeighbour.x > 0 && coordNeighbour.x < gridWidth && coordNeighbour.y > 0 && coordNeighbour.y < gridHeight)
+    {
+        aliveNeighbors += Original[coordNeighbour];
+    }
+
+    return aliveNeighbors;
+}
+
+[numthreads(256,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    int2 index2D = Get2DIndex(id.x, gridWidth);
+    if (index2D.x >= gridWidth || index2D.y >= gridHeight)
+        return;
+
+    //Sample current state
+    int currentState = Original[index2D].x;
+    //Check amount of neighbours that are alive
+    int countAliveNeighbors = GetAmountOfAliveNeighbors(index2D);
+
+    //Check if cell's next state
+    int newState;
+    if (currentState == 0 && countAliveNeighbors == 3)
+    {
+        newState = 1;
+    } else if (currentState == 1 && (countAliveNeighbors == 2 || countAliveNeighbors == 3))
+    {
+        newState = 1;
+    } else
+    {
+        newState = 0;
+    }
+
+    Result[index2D] = float4(newState, newState, newState, newState);
+}

@@ -6,8 +6,6 @@ RWTexture2D<float4> renderTexture;
 int stateListSize;
 int stateListWidth;
 int stateListHeight;
-int blockHeight;
-int blockWidth;
 
 
 int2 Get2DIndex(int id, int Width)

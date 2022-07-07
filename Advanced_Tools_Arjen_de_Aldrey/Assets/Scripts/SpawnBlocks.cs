@@ -8,10 +8,13 @@ public class SpawnBlocks : MonoBehaviour
     //GPU specific
     public static SpawnBlocks instance;
     [SerializeField] public ComputeShader GPUShader;
+    [SerializeField] public ComputeShader CreationShader;
+    [SerializeField] public ComputeShader CopyShader;
     [SerializeField] private GameObject renderQuad;
 
     private Material renderMat;
     public RenderTexture renderTarget;
+    public RenderTexture currentStates;
 
     [SerializeField] private GameObject blockPrefab;
     private Block[,] blocks;
@@ -50,7 +53,12 @@ public class SpawnBlocks : MonoBehaviour
     }
     void Start()
     {
-        blocksList = new List<Block>();
+        //blocksList = new List<Block>();
+
+        currentStates = new RenderTexture(blockAmountWidth, blockAmountHeight, 24);
+        currentStates.enableRandomWrite = true;
+        currentStates.filterMode = FilterMode.Point;
+        currentStates.Create();
 
         renderTarget = new RenderTexture(blockAmountWidth, blockAmountHeight, 24);
         renderTarget.enableRandomWrite = true;
@@ -74,7 +82,9 @@ public class SpawnBlocks : MonoBehaviour
             if (timePassed >= TimeInbetweenGenerations)
             {
                 timePassed = 0;
-                preset.checkBehaviour.CheckBlocks(blocksList, preset.ruleset, blockAmountWidth, blockAmountHeight);
+                UpdateGrid();
+                CopyGrid(renderTarget, currentStates);
+                //preset.checkBehaviour.CheckBlocks(blocksList, preset.ruleset, blockAmountWidth, blockAmountHeight);
             }
             else
             {
@@ -89,22 +99,46 @@ public class SpawnBlocks : MonoBehaviour
     {
         if (GUI.Button(new Rect(10, 10, 200, 50), "Generate squares"))
         {
-            reset();
+            CreateGrid();
+            //reset();
             timeBeforeTest = DateTime.Now;
-            blockWidth = Screen.width / (float)blockAmountWidth;
-            blockHeight = Screen.height / (float)blockAmountHeight;
-            spawningPreset.spawnRuleset.GenerateMap(blockWidth, blockHeight, blockAmountWidth, blockAmountHeight, blockPrefab, ref blocks, ref blocksList, parentObject.transform);
+            CopyGrid(currentStates, renderTarget);
+            //blockWidth = Screen.width / (float)blockAmountWidth;
+            //blockHeight = Screen.height / (float)blockAmountHeight;
+            //spawningPreset.spawnRuleset.GenerateMap(blockWidth, blockHeight, blockAmountWidth, blockAmountHeight, blockPrefab, ref blocks, ref blocksList, parentObject.transform);
             DisplaySpawnTiming();
         }
-        if (GUI.Button(new Rect(10, 65, 200, 50), "Reset"))
-        {
-            reset();
-        }
+    }
+
+    private void CreateGrid()
+    {
+        CreationShader.SetTexture(0, "Result", currentStates);
+        CreationShader.SetInt("gridWidth", blockAmountWidth);
+        CreationShader.SetInt("gridHeight", blockAmountHeight);
+        CreationShader.Dispatch(0, blockAmountWidth* blockAmountHeight / 32, 1, 1);
+    }
+    
+    private void CopyGrid(RenderTexture from, RenderTexture to)
+    {
+        CopyShader.SetTexture(0, "Original", from);
+        CopyShader.SetTexture(0, "Result", to);
+        CopyShader.SetInt("gridWidth", blockAmountWidth);
+        CopyShader.SetInt("gridHeight", blockAmountHeight);
+        CopyShader.Dispatch(0, blockAmountWidth * blockAmountHeight / 32, 1, 1);
+    }
+
+    private void UpdateGrid()
+    {
+        GPUShader.SetTexture(0, "Original", currentStates);
+        GPUShader.SetTexture(0, "Result", renderTarget);
+        GPUShader.SetInt("gridWidth", blockAmountWidth);
+        GPUShader.SetInt("gridHeight", blockAmountHeight);
+        GPUShader.Dispatch(0, blockAmountWidth * blockAmountHeight / 32, 1, 1);
     }
     
     private void DisplaySpawnTiming()
     {
-        Debug.Log($"It took {(DateTime.Now - timeBeforeTest).TotalSeconds} seconds to generate the map.");
+        Debug.Log($"It took {(DateTime.Now - timeBeforeTest).TotalMilliseconds} milliseconds to generate the map.");
     }
 
     private void DisplayAverageFPSOverTime(float overTimeInSeconds)
@@ -125,11 +159,12 @@ public class SpawnBlocks : MonoBehaviour
 
     private void reset()
     {
-        for(int i = 0;i<blocksList.Count;i++)
-        {
-            Destroy(blocksList[i].transform.gameObject);
-        }
+        //for(int i = 0;i<blocksList.Count;i++)
+        //{
+        //    Destroy(blocksList[i].transform.gameObject);
+        //}
         start = false;
-        blocksList.Clear();
+        //blocksList.Clear();
+
     }
 }

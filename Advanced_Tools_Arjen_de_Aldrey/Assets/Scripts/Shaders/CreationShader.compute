@@ -1,0 +1,23 @@
+#pragma kernel CSMain
+
+RWTexture2D<float4> Result;
+int gridWidth;
+int gridHeight;
+
+int2 Get2DIndex(int id, int Width)
+{
+    float y = id / Width;
+    float x = id % Width;
+    return int2(x,y);
+}
+
+[numthreads(256,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    int2 index2D = Get2DIndex(id.x, gridWidth);
+    if (index2D.x >= gridWidth || index2D.y >= gridHeight)
+        return;
+
+    int isAlive = (index2D.x + index2D.y) % 2 == 0? true: false;
+    Result[index2D] = float4(isAlive,isAlive,isAlive,isAlive);
+}
