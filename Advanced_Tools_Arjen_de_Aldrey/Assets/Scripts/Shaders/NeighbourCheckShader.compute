@@ -2,10 +2,13 @@
 
 RWStructuredBuffer<int> oldStates;
 RWStructuredBuffer<int> newStates;
-//RWTexture2D<float4> renderTexture; 
+RWTexture2D<float4> renderTexture; 
 int stateListSize;
 int stateListWidth;
 int stateListHeight;
+int blockHeight;
+int blockWidth;
+
 
 int2 Get2DIndex(int id, int Width)
 {
@@ -98,5 +101,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         newStates[id.x] = 0;
     }
 
-    //renderTexture[Get2DIndex(id.x, stateListWidth)] = float4(newStates[id.x],newStates[id.x],newStates[id.x],1);
+    int2 index2D = Get2DIndex(id.x, stateListWidth);
+
+    renderTexture[index2D] = float4(newStates[id.x],newStates[id.x],newStates[id.x],1);
 }

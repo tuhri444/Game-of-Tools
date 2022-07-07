@@ -54,6 +54,7 @@ public class SpawnBlocks : MonoBehaviour
 
         renderTarget = new RenderTexture(blockAmountWidth, blockAmountHeight, 24);
         renderTarget.enableRandomWrite = true;
+        renderTarget.filterMode = FilterMode.Point;
         renderTarget.Create();
 
         if (renderQuad == null) return;

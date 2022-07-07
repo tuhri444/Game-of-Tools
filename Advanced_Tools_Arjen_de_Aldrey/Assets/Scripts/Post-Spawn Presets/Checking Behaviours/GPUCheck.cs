@@ -30,7 +30,10 @@ public class GPUCheck : ICheckBehaviour
         neighbourCheckingShader.SetInt("stateListSize", blocksList.Count);
         neighbourCheckingShader.SetInt("stateListWidth", blockAmountWidth);
         neighbourCheckingShader.SetInt("stateListHeight", blockAmountHeight);
+        neighbourCheckingShader.SetInt("screenWidth", Screen.width);
+        neighbourCheckingShader.SetInt("screenHeight", Screen.height);
 
+        neighbourCheckingShader.SetTexture(0, "renderTexture", SpawnBlocks.instance.renderTarget);
 
         neighbourCheckingShader.Dispatch(0, blocksList.Count/32, 1, 1);
 
