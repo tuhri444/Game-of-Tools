@@ -38,7 +38,6 @@ public class SpawnBlocks : MonoBehaviour
             if (start) start = false;
             else start = true;
         }
-        if (Input.GetKeyDown(KeyCode.R)) reset();
         if(start)
         {
             if (timePassed >= TimeInbetweenGenerations)
@@ -55,13 +54,18 @@ public class SpawnBlocks : MonoBehaviour
 
     private void OnGUI()
     {
-        if (GUI.Button(new Rect(10, 10, 200, 100), "Generate squares"))
+        if (GUI.Button(new Rect(10, 10, 200, 50), "Generate squares"))
         {
+            reset();
             timeBeforeTest = DateTime.Now;
             blockWidth = Screen.width / (float)blockAmountWidth;
             blockHeight = Screen.height / (float)blockAmountHeight;
             spawningPreset.spawnRuleset.GenerateMap(blockWidth, blockHeight, blockAmountWidth, blockAmountHeight, blockPrefab, ref blocks, ref blocksList, parentObject.transform);
             DisplaySpawnTiming();
+        }
+        if (GUI.Button(new Rect(10, 65, 200, 50), "Reset"))
+        {
+            reset();
         }
     }
     
@@ -78,6 +82,5 @@ public class SpawnBlocks : MonoBehaviour
         }
         start = false;
         blocksList.Clear();
-        spawningPreset.spawnRuleset.GenerateMap(blockWidth, blockHeight, blockAmountWidth, blockAmountHeight, blockPrefab, ref blocks, ref blocksList, parentObject.transform);
     }
 }
