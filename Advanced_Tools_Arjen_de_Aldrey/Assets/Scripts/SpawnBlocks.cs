@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,8 +8,8 @@ public class SpawnBlocks : MonoBehaviour
     [SerializeField] private GameObject blockPrefab;
     private Block[,] blocks;
     private List<Block> blocksList;
-    [Range(1,10000)][SerializeField] private int blockAmountWidth;
-    [Range(1,10000)][SerializeField] private int blockAmountHeight;
+    [Range(1,1400)][SerializeField] private int blockAmountWidth;
+    [Range(1,1400)][SerializeField] private int blockAmountHeight;
 
     private float blockWidth;
     private float blockHeight;
@@ -20,6 +21,10 @@ public class SpawnBlocks : MonoBehaviour
     [SerializeField] private float TimeInbetweenGenerations;
 
     [SerializeField] private StandardPreset preset;
+
+    private DateTime timeBeforeTest;
+    private float fpsChecked = 0;
+    private float averageFPS;
 
 
     void Start()
